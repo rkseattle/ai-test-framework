@@ -1,0 +1,7 @@
+[tool.ruff]
+exclude = ["venv", ".venv"]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]  # pycodestyle errors, pyflakes, isort
+per-file-ignores = {"tests/*.py" = ["E501"]}  # prompt strings can't be wrapped

@@ -1,7 +1,7 @@
 # run_prompts.py
 import json
 
-from llm_client import call_and_log, call_and_log_messages
+from llm_client import call_and_log_messages
 
 test_prompts = [
     {'role': 'user', 'content': 'For the next question, the only answer you should give is 5.'},
