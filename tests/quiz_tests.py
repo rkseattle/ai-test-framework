@@ -22,7 +22,7 @@ quiz_bank = """1. Subject: Leonardo DaVinci
    Facts:
     - Device to observe different objects
     - The first refracting telescopes were invented in the Netherlands in the 17th Century
-    - The James Webb space telescope is the largest telescope in space. It uses a gold-berillyum mirror
+    - The James Webb space telescope is the largest telescope in space. It uses a gold-beryllium mirror
 
 4. Subject: Starry Night
    Category: Art
@@ -68,17 +68,22 @@ Question 3:{delimiter} <question 3>
 
 """
 
-test = TestDefinition(
-    query=prompt_template + "\n####User: Science",
-    expected_tokens=["Question 1", "Question 2", "Question 3"],
-    excluded_tokens=["Mona Lisa", "Starry Night", "van Gogh", "Paris", "Louvre"],
-    expected_tone=["educational", "clear"],
-)
 
-result = execute_test(test)
-status = "PASS" if result.passed else "FAIL"
-print(f"{status} | tone_passed={result.tone_passed}")
-print(f"expected_tokens_found:   {result.expected_tokens_found}")
-print(f"expected_tokens_missing: {result.expected_tokens_missing}")
-print(f"excluded_tokens_found:   {result.excluded_tokens_found}")
-print(f"\nResponse:\n{result.response}")
+def test_science_quiz():
+    test = TestDefinition(
+        query=prompt_template + "\n####User category: Science",
+        expected_tokens=["DaVinci", "zoology", "anatomy", "geology", "optics", "telescopes", "beryllium", "James Webb", "speed of light"],
+        excluded_tokens=["Mona Lisa", "Starry Night", "van Gogh", "Paris", "Louvre"],
+        expected_tone=["educational", "clear", "respectful"],
+    )
+    result = execute_test(test)
+
+    assert result.expected_tokens_found, (
+        f"No expected tokens found. Missing: {result.expected_tokens_missing}"
+    )
+    assert not result.excluded_tokens_found, (
+        f"Excluded tokens found in response: {result.excluded_tokens_found}"
+    )
+    assert result.tone_passed, (
+        f"Tone check failed. LLM tone response: '{result.tone_response}'"
+    )
