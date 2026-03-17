@@ -1,6 +1,7 @@
 import sys
+
 sys.path.insert(0, '.')
-from test_framework import TestDefinition, execute_test
+from test_framework import TestDefinition, execute_test, validate_results
 
 quiz_bank = """1. Subject: Leonardo DaVinci
    Categories: Art, Science
@@ -72,18 +73,10 @@ Question 3:{delimiter} <question 3>
 def test_science_quiz():
     test = TestDefinition(
         query=prompt_template + "\n####User category: Science",
-        expected_tokens=["DaVinci", "zoology", "anatomy", "geology", "optics", "telescopes", "beryllium", "James Webb", "speed of light"],
+        must_have_tokens=["Question 1", "Question 2", "Question 3"],
+        could_contain_tokens=["DaVinci", "zoology", "anatomy", "geology", "optics", "telescopes", "beryllium", "James Webb", "speed of light"],
         excluded_tokens=["Mona Lisa", "Starry Night", "van Gogh", "Paris", "Louvre"],
         expected_tone=["educational", "clear", "respectful"],
     )
     result = execute_test(test)
-
-    assert result.expected_tokens_found, (
-        f"No expected tokens found. Missing: {result.expected_tokens_missing}"
-    )
-    assert not result.excluded_tokens_found, (
-        f"Excluded tokens found in response: {result.excluded_tokens_found}"
-    )
-    assert result.tone_passed, (
-        f"Tone check failed. LLM tone response: '{result.tone_response}'"
-    )
+    validate_results(test, result)

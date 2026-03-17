@@ -1,22 +1,25 @@
 from dataclasses import dataclass, field
+
 from llm_client import call_and_log_messages
 
 
 @dataclass
 class TestDefinition:
     query: str
-    context: list = field(default_factory=list)       # list of {'role': ..., 'content': ...}
-    expected_tokens: list = field(default_factory=list)
+    context: list = field(default_factory=list)         # list of {'role': ..., 'content': ...}
+    must_have_tokens: list = field(default_factory=list) # ALL must appear in the response
+    could_contain_tokens: list = field(default_factory=list) # at least ONE must appear
     excluded_tokens: list = field(default_factory=list)
-    expected_tone: list = field(default_factory=list)  # e.g. ['friendly', 'concise']
+    expected_tone: list = field(default_factory=list)   # e.g. ['friendly', 'concise']
 
 
 @dataclass
 class TestResult:
     response: str
     passed: bool
-    expected_tokens_found: list
-    expected_tokens_missing: list
+    must_have_found: list
+    must_have_missing: list
+    could_contain_found: list
     excluded_tokens_found: list
     tone_passed: bool | None   # None if no expected_tone provided
     tone_response: str | None
@@ -34,13 +37,15 @@ def execute_test(test: TestDefinition, model='claude-haiku-4-5-20251001') -> Tes
     response_lower = response.lower()
 
     # Token checks (case-insensitive)
-    expected_found = [t for t in test.expected_tokens if t.lower() in response_lower]
-    expected_missing = [t for t in test.expected_tokens if t.lower() not in response_lower]
-    excluded_found = [t for t in test.excluded_tokens if t.lower() in response_lower]
+    must_have_found   = [t for t in test.must_have_tokens if t.lower() in response_lower]
+    must_have_missing = [t for t in test.must_have_tokens if t.lower() not in response_lower]
+    could_contain_found = [t for t in test.could_contain_tokens if t.lower() in response_lower]
+    excluded_found    = [t for t in test.excluded_tokens if t.lower() in response_lower]
 
     tokens_pass = (
-        (not test.expected_tokens or len(expected_found) > 0) and
-        len(excluded_found) == 0
+        not must_have_missing and
+        (not test.could_contain_tokens or len(could_contain_found) > 0) and
+        not excluded_found
     )
 
     # Tone evaluation
@@ -66,9 +71,35 @@ def execute_test(test: TestDefinition, model='claude-haiku-4-5-20251001') -> Tes
     return TestResult(
         response=response,
         passed=passed,
-        expected_tokens_found=expected_found,
-        expected_tokens_missing=expected_missing,
+        must_have_found=must_have_found,
+        must_have_missing=must_have_missing,
+        could_contain_found=could_contain_found,
         excluded_tokens_found=excluded_found,
         tone_passed=tone_passed,
         tone_response=tone_response,
     )
+
+
+def validate_results(test: TestDefinition, result: TestResult) -> None:
+    """Assert that result meets the expectations in test. Raises AssertionError on failure."""
+    if test.must_have_tokens:
+        assert not result.must_have_missing, (
+            f"Required tokens missing from response: {result.must_have_missing}"
+        )
+
+    if test.could_contain_tokens:
+        assert result.could_contain_found, (
+            f"Expected at least one of {test.could_contain_tokens} in response, "
+            f"but none were found."
+        )
+
+    if test.excluded_tokens:
+        assert not result.excluded_tokens_found, (
+            f"Excluded tokens found in response: {result.excluded_tokens_found}"
+        )
+
+    if test.expected_tone:
+        assert result.tone_passed, (
+            f"Tone check failed. Expected tone: {test.expected_tone}. "
+            f"LLM response: '{result.tone_response}'"
+        )

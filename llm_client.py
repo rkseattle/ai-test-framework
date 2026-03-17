@@ -1,7 +1,11 @@
 # llm_client.py
-import anthropic, json, time, uuid
+import json
+import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+import anthropic
 from dotenv import load_dotenv
 
 load_dotenv()
