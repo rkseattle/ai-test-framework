@@ -6,6 +6,7 @@ from llm_client import call_and_log_messages
 @dataclass
 class TestDefinition:
     query: str
+    system: str | None = None                           # system prompt passed to the model
     context: list = field(default_factory=list)         # list of {'role': ..., 'content': ...}
     must_have_tokens: list = field(default_factory=list) # ALL must appear in the response
     could_contain_tokens: list = field(default_factory=list) # at least ONE must appear
@@ -28,7 +29,10 @@ class TestResult:
 def execute_test(test: TestDefinition, model='claude-haiku-4-5-20251001') -> TestResult:
     # Build message list: context + query
     messages = list(test.context) + [{'role': 'user', 'content': test.query}]
-    record = call_and_log_messages(messages, model=model)
+    kwargs = {'model': model}
+    if test.system is not None:
+        kwargs['system'] = test.system
+    record = call_and_log_messages(messages, **kwargs)
 
     if record['status'] != 'success':
         raise RuntimeError(f"LLM call failed: {record['error']}")
