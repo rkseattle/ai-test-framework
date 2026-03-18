@@ -48,14 +48,15 @@ pytest tests/ -v
 ## Project structure
 
 ```
-llm_client.py       # Anthropic API wrapper with JSONL request logging
-test_framework.py   # TestDefinition, execute_test, validate_results
+llm_client.py         # Anthropic API wrapper with JSONL request logging
+test_framework.py     # TestDefinition, execute_test, validate_results
 tests/
-  quiz_tests.py     # Example test suite for a quiz prompt
-logs/               # Daily JSONL logs of all API calls (gitignored)
-run_prompts.py      # Ad-hoc single-prompt runner
-run_messages.py     # Ad-hoc multi-message runner
-analyze_logs.py     # Log analysis: success rate, latency, token usage
+  quiz_tests.py       # Example test suite for a quiz prompt
+logs/                 # Daily JSONL logs of all API calls (gitignored)
+scripts/
+  run_prompts.py      # Ad-hoc single-prompt runner
+  run_messages.py     # Ad-hoc multi-message runner
+  analyze_logs.py     # Log analysis: success rate, latency, token usage
 ```
 
 ## Writing tests
