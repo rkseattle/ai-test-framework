@@ -29,7 +29,8 @@ def call_and_log(prompt: str, model='claude-haiku-4-5-20251001',
             messages=[{'role': 'user', 'content': prompt}]
         )
         latency_ms = round((time.time() - start) * 1000)
-        response_text = message.content[0].text
+        text_blocks = [b.text for b in message.content if hasattr(b, 'text')]
+        response_text = text_blocks[-1] if text_blocks else None
         status = 'success'
         error = None
     except Exception as e:
@@ -74,7 +75,8 @@ def call_and_log_messages(messages: list, model='claude-haiku-4-5-20251001',
             messages=messages
         )
         latency_ms = round((time.time() - start) * 1000)
-        response_text = message.content[0].text
+        text_blocks = [b.text for b in message.content if hasattr(b, 'text')]
+        response_text = text_blocks[-1] if text_blocks else None
         status = 'success'
         error = None
     except Exception as e:
