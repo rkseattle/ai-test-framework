@@ -68,6 +68,8 @@ Question 2:{delimiter} <question 2>
 
 Question 3:{delimiter} <question 3>
 
+Only output the result of Step 3. Do not show your reasoning or output from Steps 1 and 2.
+
 The next prompt will identify the category.  Again, if the category provided by the user
 isn't in the list, reply with "I'm sorry, that category isn't part of this quiz."
 """

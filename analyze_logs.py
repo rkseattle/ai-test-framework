@@ -1,5 +1,5 @@
-import json, glob
-from pathlib import Path
+import glob
+import json
 
 records = []
 for file in glob.glob('logs/*.jsonl'):
