@@ -41,11 +41,12 @@ quiz_bank = """1. Subject: Leonardo DaVinci
 delimiter = "####"
 
 prompt_template = f"""
-Follow these steps to generate a customized quiz for the user.
+In the next prompt, follow these steps to generate a customized quiz for the user.
 The question will be delimited with four hashtags i.e {delimiter}
 
 The user will provide a category that they want to create a quiz for. Any questions included in the quiz
-should only refer to the category.
+should only refer to the category.  If the category provided by the user isn't in the list, reply with
+"I'm sorry, that category isn't part of this quiz."
 
 Step 1:{delimiter} First identify the category user is asking about from the following list:
 * Geography
@@ -67,16 +68,55 @@ Question 2:{delimiter} <question 2>
 
 Question 3:{delimiter} <question 3>
 
+The next prompt will identify the category.  Again, if the category provided by the user
+isn't in the list, reply with "I'm sorry, that category isn't part of this quiz."
 """
 
 
 def test_science_quiz():
     test = TestDefinition(
-        query=prompt_template + "\n####User category: Science",
+        context=[{"role": "user", "content": prompt_template}],
+        query="User category: Science",
         must_have_tokens=["Question 1", "Question 2", "Question 3"],
         could_contain_tokens=["DaVinci", "zoology", "anatomy", "geology", "optics", "telescopes", "beryllium", "James Webb", "speed of light"],
         excluded_tokens=["Mona Lisa", "Starry Night", "van Gogh", "Paris", "Louvre"],
         expected_tone=["educational", "clear", "respectful"],
+    )
+    result = execute_test(test)
+    validate_results(test, result)
+
+def test_art_quiz():
+    test = TestDefinition(
+        context=[{"role": "user", "content": prompt_template}],
+        query="User category: Art",
+        must_have_tokens=["Question 1", "Question 2", "Question 3"],
+        could_contain_tokens=["Mona Lisa", "Starry Night", "van Gogh", "Paris", "Louvre"],
+        excluded_tokens=["zoology", "anatomy", "geology", "optics", "telescopes", "beryllium", "James Webb", "speed of light"],
+        expected_tone=["educational", "clear", "respectful"],
+    )
+    result = execute_test(test)
+    validate_results(test, result)
+
+def test_geography_quiz():
+    test = TestDefinition(
+        context=[{"role": "user", "content": prompt_template}],
+        query="User category: Geography",
+        must_have_tokens=["Question 1", "Question 2", "Question 3"],
+        excluded_tokens=["Starry Night", "van Gogh", "DaVinci", "zoology", "anatomy", "geology", "optics", "telescopes", "beryllium", "James Webb", "speed of light"],
+        could_contain_tokens=["France", "Paris", "Louvre"],
+        expected_tone=["educational", "clear", "respectful"],
+    )
+    result = execute_test(test)
+    validate_results(test, result)
+
+def test_humanities_quiz():
+    test = TestDefinition(
+        context=[{"role": "user", "content": prompt_template}],
+        query="User category: Humanities",
+        must_have_tokens=["I'm sorry"],
+        excluded_tokens=["France", "Paris", "Louvre", "Mona Lisa", "Starry Night", "van Gogh", "DaVinci", "zoology", "anatomy", "geology", "optics", "telescopes", "beryllium", "James Webb", "speed of light"],
+        could_contain_tokens=[],
+        expected_tone=["educational", "clear", "respectful", "apologetic"],
     )
     result = execute_test(test)
     validate_results(test, result)
