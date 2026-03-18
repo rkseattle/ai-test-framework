@@ -1,5 +1,27 @@
 {
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"A file was just modified. Check if the README needs to be updated to reflect this change.\"}}'",
+            "statusMessage": "Checking if README needs update..."
+          },
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path'); echo \"$f\" | grep -q '\\.py$' && source venv/bin/activate 2>/dev/null && ruff format \"$f\" 2>/dev/null || true",
+            "statusMessage": "Formatting with ruff..."
+          },
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path'); echo \"$f\" | grep -qE '\\.py$' && ! echo \"$f\" | grep -q '/tests/' && source venv/bin/activate 2>/dev/null && if python -m pytest tests/ -x -q 2>&1; then echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"pytest passed.\"}}'; else echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"pytest FAILED. Review test output and fix before committing.\"}}'; fi || true",
+            "statusMessage": "Running tests..."
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -8,6 +30,34 @@
             "type": "command",
             "statusMessage": "Running ruff check...",
             "command": "cmd=$(jq -r '.tool_input.command'); if echo \"$cmd\" | grep -q 'git commit'; then source venv/bin/activate 2>/dev/null; if ! ruff check . 2>&1; then echo '{\"continue\": false, \"stopReason\": \"Ruff check failed. Fix linting errors before committing.\"}'; exit 2; fi; fi"
+          },
+          {
+            "type": "command",
+            "statusMessage": "Checking environment...",
+            "command": "cmd=$(jq -r '.tool_input.command'); if echo \"$cmd\" | grep -qE 'pytest|python -m pytest'; then [ -f .env ] || echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"Warning: .env file not found. Tests require ANTHROPIC_API_KEY and will fail without it.\"}}'; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '\\a'",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreCompact\", \"additionalContext\": \"Before compacting, ask the user if there is anything specific they want preserved or highlighted in the summary.\"}}'",
+            "statusMessage": "Preparing for compaction..."
           }
         ]
       }
