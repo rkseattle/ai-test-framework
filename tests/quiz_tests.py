@@ -3,6 +3,11 @@ import sys
 sys.path.insert(0, '.')
 from test_framework import TestDefinition, execute_test, validate_results
 
+# As a proof of concept to validate the test_framework, these tests use
+# the quiz prompt and structure from the DeepLearning.AI course on Automated
+# Testing for LLMOps.  You can learn more here:
+#     https://learn.deeplearning.ai/courses/automated-testing-llmops
+
 quiz_bank = """1. Subject: Leonardo DaVinci
    Categories: Art, Science
    Facts:
