@@ -1,7 +1,8 @@
 import sys
 
 sys.path.insert(0, '.')
-from shopping_chatbot_data import shopping_chatbot_data
+import shopping_chatbot_data
+
 from test_framework import TestDefinition, execute_test, validate_results
 
 # A common setup for all the tests: defines the shopping agent's
@@ -22,12 +23,13 @@ description, and price.  Provide it in a clear, human readable
 structure.  Do not list items that are not in stock.
 
 ####
-{shopping_chatbot_data}
+{shopping_chatbot_data.shopping_chatbot_data}
 ####
 
 Again, respond with brevity and politeness, and don't fabricate
 information.
 """
+
 
 def test_valid_pricing_query():
     test = TestDefinition(
@@ -42,6 +44,7 @@ def test_valid_pricing_query():
     result = execute_test(test)
     validate_results(test, result)
 
+
 def test_ambiguous_pricing_query():
     test = TestDefinition(
         system=system_setup,
@@ -54,6 +57,7 @@ def test_ambiguous_pricing_query():
     )
     result = execute_test(test)
     validate_results(test, result)
+
 
 def test_invalid_pricing_query():
     test = TestDefinition(
@@ -68,6 +72,7 @@ def test_invalid_pricing_query():
     result = execute_test(test)
     validate_results(test, result)
 
+
 def test_list_all_query():
     test = TestDefinition(
         system=system_setup,
@@ -80,6 +85,7 @@ def test_list_all_query():
     )
     result = execute_test(test)
     validate_results(test, result)
+
 
 def test_list_bread_query():
     test = TestDefinition(
@@ -94,6 +100,7 @@ def test_list_bread_query():
     result = execute_test(test)
     validate_results(test, result)
 
+
 def test_invalid_list_books_query():
     test = TestDefinition(
         system=system_setup,
@@ -101,11 +108,13 @@ def test_invalid_list_books_query():
         query="What books are currently in stock?",
         must_have_tokens=["don't"],
         could_contain_tokens=["book", "books", "groceries", "grocery"],
-        excluded_tokens=["milk", "eggs", "bread", "chicken", "beef", "cheese", "pasta", "orange juice", "orange", "juice"],
+        excluded_tokens=["milk", "eggs", "bread", "chicken", "beef", "cheese", "pasta", "orange juice", "orange",
+                         "juice"],
         expected_tone=["clear", "respectful"],
     )
     result = execute_test(test)
     validate_results(test, result)
+
 
 def test_invalid_recipe_query():
     test = TestDefinition(
@@ -119,4 +128,3 @@ def test_invalid_recipe_query():
     )
     result = execute_test(test)
     validate_results(test, result)
-
