@@ -78,7 +78,7 @@ def test_list_all_query():
         system=system_setup,
         context=[],
         query="What's currently in stock?",
-        must_have_tokens=["milk", "eggs", "bread", "chicken", "beef", "cheese", "pasta"],
+        must_have_tokens=["milk", "eggs", "bread", "chicken", "beef", "cheese", "yogurt", "pasta"],
         could_contain_tokens=[],
         excluded_tokens=["orange juice", "orange", "juice"],
         expected_tone=["clear", "respectful"],
