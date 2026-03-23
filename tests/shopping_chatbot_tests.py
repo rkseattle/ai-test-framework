@@ -1,9 +1,13 @@
 import sys
 
-sys.path.insert(0, '.')
+import pytest
+
+sys.path.insert(0, ".")
 import shopping_chatbot_data
 
 from test_framework import TestDefinition, execute_test, validate_results
+
+MODELS = ["claude-haiku-4-5-20251001", "gpt-4o-mini"]
 
 # A common setup for all the tests: defines the shopping agent's
 # role, and the catalog of available items.
@@ -33,7 +37,8 @@ information.
 """
 
 
-def test_valid_pricing_query():
+@pytest.mark.parametrize("model", MODELS)
+def test_valid_pricing_query(model):
     test = TestDefinition(
         system=system_setup,
         context=[],
@@ -43,11 +48,12 @@ def test_valid_pricing_query():
         excluded_tokens=["eggs", "bread", "chicken", "beef", "cheese", "yogurt", "orange juice", "pasta"],
         expected_tone=["clear", "respectful"],
     )
-    result = execute_test(test)
+    result = execute_test(test, model=model)
     validate_results(test, result)
 
 
-def test_ambiguous_pricing_query():
+@pytest.mark.parametrize("model", MODELS)
+def test_ambiguous_pricing_query(model):
     test = TestDefinition(
         system=system_setup,
         context=[],
@@ -57,11 +63,12 @@ def test_ambiguous_pricing_query():
         excluded_tokens=["eggs", "bread", "chicken", "beef", "cheese", "yogurt", "orange juice", "pasta"],
         expected_tone=["clear", "respectful"],
     )
-    result = execute_test(test)
+    result = execute_test(test, model=model)
     validate_results(test, result)
 
 
-def test_invalid_pricing_query():
+@pytest.mark.parametrize("model", MODELS)
+def test_invalid_pricing_query(model):
     test = TestDefinition(
         system=system_setup,
         context=[],
@@ -71,11 +78,12 @@ def test_invalid_pricing_query():
         excluded_tokens=["milk", "eggs", "bread", "chicken", "beef", "cheese", "orange juice", "pasta"],
         expected_tone=["clear", "respectful"],
     )
-    result = execute_test(test)
+    result = execute_test(test, model=model)
     validate_results(test, result)
 
 
-def test_list_all_query():
+@pytest.mark.parametrize("model", MODELS)
+def test_list_all_query(model):
     test = TestDefinition(
         system=system_setup,
         context=[],
@@ -85,11 +93,12 @@ def test_list_all_query():
         excluded_tokens=["orange juice", "orange", "juice"],
         expected_tone=["clear", "respectful"],
     )
-    result = execute_test(test)
+    result = execute_test(test, model=model)
     validate_results(test, result)
 
 
-def test_list_bread_query():
+@pytest.mark.parametrize("model", MODELS)
+def test_list_bread_query(model):
     test = TestDefinition(
         system=system_setup,
         context=[],
@@ -99,26 +108,38 @@ def test_list_bread_query():
         excluded_tokens=["milk", "eggs", "chicken", "beef", "cheese", "pasta", "orange juice", "orange", "juice"],
         expected_tone=["clear", "respectful"],
     )
-    result = execute_test(test)
+    result = execute_test(test, model=model)
     validate_results(test, result)
 
 
-def test_invalid_list_books_query():
+@pytest.mark.parametrize("model", MODELS)
+def test_invalid_list_books_query(model):
     test = TestDefinition(
         system=system_setup,
         context=[],
         query="What books are currently in stock?",
         must_have_tokens=["don't"],
         could_contain_tokens=["book", "books", "groceries", "grocery"],
-        excluded_tokens=["milk", "eggs", "bread", "chicken", "beef", "cheese", "pasta", "orange juice", "orange",
-                         "juice"],
+        excluded_tokens=[
+            "milk",
+            "eggs",
+            "bread",
+            "chicken",
+            "beef",
+            "cheese",
+            "pasta",
+            "orange juice",
+            "orange",
+            "juice",
+        ],
         expected_tone=["clear", "respectful"],
     )
-    result = execute_test(test)
+    result = execute_test(test, model=model)
     validate_results(test, result)
 
 
-def test_invalid_recipe_query():
+@pytest.mark.parametrize("model", MODELS)
+def test_invalid_recipe_query(model):
     test = TestDefinition(
         system=system_setup,
         context=[],
@@ -128,5 +149,5 @@ def test_invalid_recipe_query():
         excluded_tokens=["chicken", "beef", "cheese", "pasta", "orange juice", "orange", "juice"],
         expected_tone=["clear", "respectful"],
     )
-    result = execute_test(test)
+    result = execute_test(test, model=model)
     validate_results(test, result)
