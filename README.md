@@ -1,6 +1,6 @@
 # ai-test-framework
 
-A lightweight framework for testing LLM prompts against Claude. Defines structured test cases with token, tone, and injection-resistance checks, and logs every API call for analysis.
+A lightweight framework for testing LLM prompts against Claude and OpenAI models. Defines structured test cases with token, tone, and injection-resistance checks, and logs every API call for analysis.
 
 ## Setup
 
@@ -18,10 +18,11 @@ Configure git hooks:
 git config core.hooksPath .githooks
 ```
 
-Create a `.env` file with your Anthropic API key:
+Create a `.env` file with your API key(s):
 
 ```
 ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...        # optional, required for OpenAI models
 ```
 
 ## Running tests
@@ -43,13 +44,13 @@ Run with verbose output:
 pytest tests/ -v
 ```
 
-> **Note:** Tests call the Anthropic API and consume tokens. Each test suite run makes multiple API calls — one for the main response and one for the tone evaluation.
+> **Note:** Tests run against both Claude and OpenAI models and consume tokens from both APIs. Each test makes two API calls — one for the main response and one for the tone evaluation.
 
 ## Project structure
 
 ```
-llm_client.py         # Anthropic API wrapper with JSONL request logging
-test_framework.py     # TestDefinition, execute_test, validate_results
+llm_client.py       # Claude/OpenAI API wrapper with JSONL request logging
+test_framework.py   # TestDefinition, execute_test, validate_results
 tests/
   quiz_tests.py       # Example test suite for a quiz prompt
 logs/                 # Daily JSONL logs of all API calls (gitignored)
