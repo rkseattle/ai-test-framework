@@ -1,5 +1,6 @@
 # llm_client.py
 import json
+import os
 import time
 import uuid
 from datetime import datetime, timezone
@@ -38,8 +39,6 @@ def _get_openai_client():
 def _get_gemini_client():
     global _gemini_client
     if _gemini_client is None:
-        import os
-
         _gemini_client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
     return _gemini_client
 
@@ -89,8 +88,8 @@ def _call_gemini(messages: list, model: str, system: str, max_tokens: int):
         ),
     )
     response_text = response.text if response.candidates else None
-    input_tokens = response.usage_metadata.prompt_token_count
-    output_tokens = response.usage_metadata.candidates_token_count
+    input_tokens = response.usage_metadata.prompt_token_count if response.usage_metadata else None
+    output_tokens = response.usage_metadata.candidates_token_count if response.usage_metadata else None
     return response_text, input_tokens, output_tokens
 
 
