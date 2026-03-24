@@ -6,11 +6,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"A file was just modified. Check if the README needs to be updated to reflect this change.\"}}'",
-            "statusMessage": "Checking if README needs update..."
-          },
-          {
-            "type": "command",
             "command": "f=$(jq -r '.tool_input.file_path'); echo \"$f\" | grep -q '\\.py$' && source venv/bin/activate 2>/dev/null && ruff format \"$f\" 2>/dev/null || true",
             "statusMessage": "Formatting with ruff..."
           },
