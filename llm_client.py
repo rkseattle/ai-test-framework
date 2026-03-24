@@ -1,5 +1,6 @@
 # llm_client.py
 import json
+import os
 import time
 import uuid
 from datetime import datetime, timezone
@@ -8,6 +9,8 @@ from pathlib import Path
 import anthropic
 import openai
 from dotenv import load_dotenv
+from google import genai
+from google.genai import types as genai_types
 
 load_dotenv()
 
@@ -16,6 +19,7 @@ LOG_DIR.mkdir(exist_ok=True)
 
 _anthropic_client = None
 _openai_client = None
+_gemini_client = None
 
 
 def _get_anthropic_client():
@@ -32,8 +36,19 @@ def _get_openai_client():
     return _openai_client
 
 
+def _get_gemini_client():
+    global _gemini_client
+    if _gemini_client is None:
+        _gemini_client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
+    return _gemini_client
+
+
 def _is_openai_model(model: str) -> bool:
     return model.startswith(("gpt-", "o1", "o3", "o4", "text-"))
+
+
+def _is_gemini_model(model: str) -> bool:
+    return model.startswith("gemini-")
 
 
 def _call_anthropic(messages: list, model: str, system: str, max_tokens: int):
@@ -59,15 +74,32 @@ def _call_openai(messages: list, model: str, system: str, max_tokens: int):
     return response_text, response.usage.prompt_tokens, response.usage.completion_tokens
 
 
+def _call_gemini(messages: list, model: str, system: str, max_tokens: int):
+    gemini_messages = [
+        {"role": "model" if msg["role"] == "assistant" else msg["role"], "parts": [{"text": msg["content"]}]}
+        for msg in messages
+    ]
+    response = _get_gemini_client().models.generate_content(
+        model=model,
+        contents=gemini_messages,
+        config=genai_types.GenerateContentConfig(
+            system_instruction=system,
+            max_output_tokens=max_tokens,
+        ),
+    )
+    response_text = response.text if response.candidates else None
+    input_tokens = response.usage_metadata.prompt_token_count if response.usage_metadata else None
+    output_tokens = response.usage_metadata.candidates_token_count if response.usage_metadata else None
+    return response_text, input_tokens, output_tokens
+
+
 def _log_record(record: dict):
     log_file = LOG_DIR / f"{datetime.now().strftime('%Y-%m-%d')}.jsonl"
     with open(log_file, "a") as f:
         f.write(json.dumps(record) + "\n")
 
 
-def call_and_log(
-    prompt: str, model="claude-haiku-4-5-20251001", system="You are a helpful assistant.", max_tokens=1024
-) -> dict:
+def call_and_log(prompt: str, model="claude-haiku-4-5", system="You are a helpful assistant.", max_tokens=1024) -> dict:
     return call_and_log_messages(
         messages=[{"role": "user", "content": prompt}],
         model=model,
@@ -79,7 +111,7 @@ def call_and_log(
 
 def call_and_log_messages(
     messages: list,
-    model="claude-haiku-4-5-20251001",
+    model="claude-haiku-4-5",
     system="You are a helpful assistant.",
     max_tokens=1024,
     prompt=None,
@@ -90,6 +122,8 @@ def call_and_log_messages(
     try:
         if _is_openai_model(model):
             response_text, input_tokens, output_tokens = _call_openai(messages, model, system, max_tokens)
+        elif _is_gemini_model(model):
+            response_text, input_tokens, output_tokens = _call_gemini(messages, model, system, max_tokens)
         else:
             response_text, input_tokens, output_tokens = _call_anthropic(messages, model, system, max_tokens)
         latency_ms = round((time.time() - start) * 1000)

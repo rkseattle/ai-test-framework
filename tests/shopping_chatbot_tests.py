@@ -7,7 +7,7 @@ import shopping_chatbot_data
 
 from test_framework import TestDefinition, execute_test, validate_results
 
-MODELS = ["claude-haiku-4-5-20251001", "gpt-4o-mini"]
+MODELS = ["claude-haiku-4-5", "gpt-4o-mini", "gemini-2.5-flash-lite"]
 
 # A common setup for all the tests: defines the shopping agent's
 # role, and the catalog of available items.

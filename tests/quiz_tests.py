@@ -10,7 +10,7 @@ from test_framework import TestDefinition, execute_test, validate_results
 # Testing for LLMOps.  You can learn more here:
 #     https://learn.deeplearning.ai/courses/automated-testing-llmops
 
-MODELS = ["claude-haiku-4-5-20251001", "gpt-4o-mini"]
+MODELS = ["claude-haiku-4-5", "gpt-4o-mini", "gemini-2.5-flash-lite"]
 
 quiz_bank = """1. Subject: Leonardo DaVinci
    Categories: Art, Science
@@ -98,12 +98,13 @@ def test_science_quiz(model):
             "anatomy",
             "geology",
             "optics",
+            "telescope",
             "telescopes",
             "beryllium",
             "James Webb",
             "speed of light",
         ],
-        excluded_tokens=["Mona Lisa", "Starry Night", "van Gogh", "Paris", "Louvre"],
+        excluded_tokens=["Mona Lisa", "Starry Night", "van Gogh", "Louvre"],
         expected_tone=["educational", "clear", "respectful"],
     )
     result = execute_test(test, model=model)

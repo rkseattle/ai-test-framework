@@ -1,6 +1,6 @@
 # ai-test-framework
 
-A lightweight framework for testing LLM prompts against Claude and OpenAI models. Defines structured test cases with token, tone, and injection-resistance checks, and logs every API call for analysis.
+A lightweight framework for testing LLM prompts against Claude, OpenAI, and Gemini models. Defines structured test cases with token, tone, and injection-resistance checks, and logs every API call for analysis.
 
 ## Setup
 
@@ -23,6 +23,7 @@ Create a `.env` file with your API key(s):
 ```
 ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...        # optional, required for OpenAI models
+GOOGLE_API_KEY=...           # optional, required for Gemini models
 ```
 
 ## Running tests
@@ -44,12 +45,12 @@ Run with verbose output:
 pytest tests/ -v
 ```
 
-> **Note:** Tests run against both Claude and OpenAI models and consume tokens from both APIs. Each test makes two API calls — one for the main response and one for the tone evaluation.
+> **Note:** Tests run against Claude, OpenAI, and Gemini models and consume tokens from each API. Each test makes two API calls — one for the main response and one for the tone evaluation.
 
 ## Project structure
 
 ```
-llm_client.py       # Claude/OpenAI API wrapper with JSONL request logging
+llm_client.py       # Claude/OpenAI/Gemini API wrapper with JSONL request logging
 test_framework.py   # TestDefinition, execute_test, validate_results
 tests/
   quiz_tests.py       # Example test suite for a quiz prompt
